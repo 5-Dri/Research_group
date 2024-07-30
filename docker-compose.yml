@@ -1,0 +1,21 @@
+services:
+  mlflow:
+    container_name: mlflow
+    build: ./mlflow_docker/
+    ports: 
+      - "5000:5000"
+
+  torch:
+    container_name: torch
+    build: ./torch_docker/
+    volumes: 
+      - ./prog:/root/prog
+    command: /bin/bash
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+
