@@ -5,5 +5,5 @@
 *.pyc
 *.pt
 
-/data
-/multirun
+data/
+multirun/
