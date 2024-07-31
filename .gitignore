@@ -4,3 +4,6 @@
 *.com
 *.pyc
 *.pt
+
+/data
+/multirun
