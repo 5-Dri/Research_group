@@ -1,7 +1,7 @@
 IFS_BACKUP=$IFS
 IFS=$'\n'
 ary=("
-     python main.py --multirun 'key=GAT_cora' \
+     python main.py --multirun 'key=GAT_cora_tuned_DP' \
      'GAT_cora.n_head=8' \
      'GAT_cora.n_head_last=1' \
      'GAT_cora.mode=original' \

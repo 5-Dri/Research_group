@@ -148,6 +148,7 @@ def main(cfg):
     # mlflow.log_metric('test_acc_mean',test_acc_ave)
     # mlflow.log_metric('test_acc_max',max(test_accs))
     # mlflow.end_run()
+    print("acc_ave", test_acc_ave)
 
     
     return test_acc_ave
