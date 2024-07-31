@@ -62,14 +62,14 @@ def convert_to_pyg_data(group_edge_indices, data1):
 
 
 #グループをノードとするグラフ作成
-def make_group_graph(G, select_nodes):
+def make_group_graph(G, target_nodes):
 
 
     subgraph = nx.Graph()
-    subgraph.add_nodes_from(select_nodes)
+    subgraph.add_nodes_from(target_nodes)
 
-    for node in select_nodes:
-        for target_node in select_nodes:
+    for node in target_nodes:
+        for target_node in target_nodes:
              if node != target_node:  # 自分自身を除外
                 try:
                     path_length = nx.shortest_path_length(G, source=node, target=target_node)
