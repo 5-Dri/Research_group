@@ -111,6 +111,7 @@ def main(cfg):
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     data = dataset[0].to(device)
+    print(data)
     
     data,index = random_splits(data=data,num_classes=cfg["n_class"],lcc_mask=None)
     # check_train_label_per(data)

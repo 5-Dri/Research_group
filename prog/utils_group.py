@@ -51,13 +51,6 @@ def create_group_edge_indices_list(G, partition):
 
 
 # PyTorch Geometricのデータ形式に変換する関数
-# def convert_to_pyg_data(group_edge_indices, data1):
-#     pyg_data_list = []
-#     for group, (edge_start, edge_end) in group_edge_indices:
-#         edge_index = torch.tensor([edge_start, edge_end], dtype=torch.long)
-#         data = Data(x=data1.x, edge_index=edge_index, y = data1.y, train_mask = data1.train_mask, val_mask = data1.val_mask, test_mask = data1.test_mask)
-#         pyg_data_list.append(data)
-#     return pyg_data_list
 
 def convert_to_pyg_data(group_edge_indices, data1):
     pyg_data_list = []
@@ -68,6 +61,7 @@ def convert_to_pyg_data(group_edge_indices, data1):
     return pyg_data_list
 
 
+#グループをノードとするグラフ作成
 def make_group_graph(G, select_nodes):
 
 
@@ -85,31 +79,3 @@ def make_group_graph(G, select_nodes):
                     continue
     
     return subgraph
-
-
-def create_weighted_groups(G, num_groups):
-    # ノードリストとその次数を取得
-    degree_df = G.degrees().to_pandas()
-    nodes = degree_df['vertex'].values
-    degrees = degree_df['degree'].values
-
-    # 重み付きランダム選択のための確率分布を計算
-    total_degree = np.sum(degrees)
-    probabilities = degrees / total_degree
-
-    # 重み付きランダムにノードを選択
-    random_nodes = np.random.choice(nodes, size=num_groups, p=probabilities, replace=False)
-
-    groups = {}
-    all_assigned_nodes = set()
-
-    for i, node in enumerate(random_nodes):
-        # 1ステップの距離にあるノードを取得
-        neighbors = G.get_two_hop_neighbors(cudf.Series([node])).iloc[:, 1].to_pandas().values
-        # 自分自身と隣接ノードをグループに追加
-        group_nodes = set(neighbors)
-        group_nodes.add(node)
-        groups[f"group_{i}"] = group_nodes
-        all_assigned_nodes.update(group_nodes)
-
-    return groups

@@ -1,4 +1,4 @@
-key: debag
+key: debug
 # -------datasets (Planetoid))-------
 Planetoid: &Planetoid
   task: Transductive
@@ -416,12 +416,12 @@ GAT_citeseer_tuned_SD_2: &GAT_citeseer_tuned_SD_2
 #   class_num: Multi
 #   path: ppi_checkpoint.pt
 #   '''
-#debag
-debag:
+#debug
+debug:
   <<: *GAT_cora_tuned_DP
   oracle_attention: False
   num_layer: 2
-  run: 15
+  run: 1
   
 defaults:
   - override hydra/sweeper: optuna # [basic, optuna]
@@ -432,4 +432,4 @@ hydra:
       _target_: optuna.samplers.TPESampler
     direction: maximize
     n_jobs: 1
-    n_trials: 30
+    n_trials: 1
