@@ -56,7 +56,7 @@ class GAT(nn.Module):
         if self.cfg['task'] == 'Transductive':
             if self.cfg["num_layer"] !=1:
                 x = F.dropout(x, p=self.dropout, training=self.training)
-                x= self.inconv(x,edge_index)
+                x = self.inconv(x,edge_index)
                 x = self.in_norm(x)
                 x = F.elu(x)
             for mid_conv,mid_norm in zip(self.mid_convs,self.mid_norms):
