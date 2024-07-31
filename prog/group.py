@@ -42,7 +42,7 @@ G.add_edges_from(edges)
 
 # グループ分け
 groups, target_node = group_nodes_weighted_by_degree(G)
-# print("groups", groups)
+print("groups", groups)
 # print("target_nodes", target_node)
 
 
