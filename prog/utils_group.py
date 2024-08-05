@@ -10,27 +10,33 @@ import numpy as np
 # すべてのノードが属するようにグループ分けを行う関数
 def group_nodes_weighted_by_degree(G):
     nodes = set(G.nodes())
+    t_nodes = set(G.nodes())
     degrees = dict(G.degree())
-    total_degree = sum(degrees.values())
-    groups = {}
-    group_id = 0
+    # groups = {}
+    # group_id = 0
     select_node = []
+    groups = []
 
     while nodes:
-        group_id += 1
+        # group_id += 1
         # 重み付きランダムサンプリングによりノードを選択
-        weights = [degrees[node] for node in nodes]
-        seed_node = random.choices(list(nodes), weights=weights, k=1)[0]
+        group = []
+        weights = [degrees[node] for node in t_nodes]
+        seed_node = random.choices(list(t_nodes), weights=weights, k=1)[0]
         select_node.append(seed_node)
+        t_nodes.remove(seed_node)
         # 1ステップのノード（隣接ノード）を取得
         neighbors = list(G.neighbors(seed_node)) + [seed_node]
         # 新しいグループに追加
         for node in neighbors:
-            if node in nodes:
-                nodes.remove(node)
-                groups[node] = group_id
+            if node in G.nodes:
+                nodes.remove(node)   #グループ化済ノードを全部消して、他グループに属さない
+                group.append(node)
+                # groups[node] = group_id
+        groups.append(group)
 
     #subgraph = make_group_graph(G, select_node)
+
 
     #return groups, subgraph
     return groups , select_node
