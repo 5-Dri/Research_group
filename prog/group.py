@@ -21,9 +21,8 @@ dataset = Planetoid(path, args.dataset, transform=T.NormalizeFeatures())
 data = dataset[0].to(device)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 edge_index1 = data.edge_index
-
-
 
 edge_index2 = torch.Tensor([[0,1,2,2,2,2,3,4,4,5,5,5,6,7,7,8,9,9],
                            [2,2,0,1,6,5,4,3,5,2,4,9,2,8,9,7,5,7]])
@@ -43,10 +42,18 @@ G = nx.Graph()
 G.add_edges_from(edges)
 # print("G", G)
 
+# pos = nx.spring_layout(G, seed=0) #ノードの配置を指定
+
+# # グラフの描画
+# plt.figure(figsize=(10,10)) #グラフエリアのサイズ
+# nx.draw_networkx(G, pos, node_color='#87cefa', font_size=10) #グラフの描画(おまかせ)
+# plt.show() #グラフの描画
+
 # グループ分け
 groups, target_node = group_nodes_weighted_by_degree(G)
 print("groups", groups)
 print("target_nodes", target_node)
+
 
 
 # # グループのedge_indexをリストで

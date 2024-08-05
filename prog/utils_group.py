@@ -29,7 +29,7 @@ def group_nodes_weighted_by_degree(G):
         neighbors = list(G.neighbors(seed_node)) + [seed_node]
         # 新しいグループに追加
         for node in neighbors:
-            if node in G.nodes:
+            if node in nodes:
                 nodes.remove(node)   #グループ化済ノードを全部消して、他グループに属さない
                 group.append(node)
                 # groups[node] = group_id
