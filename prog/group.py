@@ -8,7 +8,7 @@ import os.path as osp
 import time
 import networkx as nx
 
-from utils_group import group_nodes_weighted_by_degree, create_group_edge_indices_list,make_group_graph, convert_to_pyg_data
+from utils_group import group_nodes_weighted_by_degree, filter_single_element_lists, filter_adjacent_nodes, create_group_edge_indices_list,make_group_graph, convert_to_pyg_data
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='Cora')
@@ -54,6 +54,15 @@ groups, target_node = group_nodes_weighted_by_degree(G)
 print("groups", groups)
 print("target_nodes", target_node)
 
+result = filter_single_element_lists(groups)
+print("長さ１のグループ",result)
+
+result2, result3 = filter_adjacent_nodes(groups, G)
+print("隣接含むリスト",result2)
+print("合体",result3)
+
+
+
 
 
 # # グループのedge_indexをリストで
@@ -76,11 +85,3 @@ print("target_nodes", target_node)
 
 # new_edge = new_G.edges()
 # print("new edge", new_edge)
-
-
-
-
-
-
-
-

@@ -10,7 +10,6 @@ import numpy as np
 # すべてのノードが属するようにグループ分けを行う関数
 def group_nodes_weighted_by_degree(G):
     nodes = set(G.nodes())
-    t_nodes = set(G.nodes())
     degrees = dict(G.degree())
     # groups = {}
     # group_id = 0
@@ -21,16 +20,15 @@ def group_nodes_weighted_by_degree(G):
         # group_id += 1
         # 重み付きランダムサンプリングによりノードを選択
         group = []
-        weights = [degrees[node] for node in t_nodes]
-        seed_node = random.choices(list(t_nodes), weights=weights, k=1)[0]
+        weights = [degrees[node] for node in nodes]
+        seed_node = random.choices(list(nodes), weights=weights, k=1)[0]
         select_node.append(seed_node)
-        t_nodes.remove(seed_node)
         # 1ステップのノード（隣接ノード）を取得
         neighbors = list(G.neighbors(seed_node)) + [seed_node]
         # 新しいグループに追加
         for node in neighbors:
             if node in nodes:
-                nodes.remove(node)   #グループ化済ノードを全部消して、他グループに属さない
+                nodes.remove(node)
                 group.append(node)
                 # groups[node] = group_id
         groups.append(group)
@@ -40,6 +38,28 @@ def group_nodes_weighted_by_degree(G):
 
     #return groups, subgraph
     return groups , select_node
+
+def filter_single_element_lists(list_of_lists):
+    return [lst for lst in list_of_lists if len(lst) == 1]
+
+def filter_adjacent_nodes(single_element_lists, G):
+    single_nodes = [lst[0] for lst in single_element_lists if len(lst) == 1]
+    adjacent_nodes_lists = []
+    combined_lists = []
+
+    for node in single_nodes:
+        # for edge in graph:
+        #     print(edge)
+            # if node in edge:
+            #     adjacent_nodes_lists.append(edge)
+        neighbors = list(G.neighbors(node))
+        for lst in single_element_lists:
+                if len(lst) > 1 and any(neighbor in lst for neighbor in neighbors):
+                    adjacent_nodes_lists.append(lst)
+                    combined_lists.append([node] + lst)
+                    break  # 同じリストを複数回追加しないようにするため
+
+    return adjacent_nodes_lists, combined_lists
 
 
 # グループごとのエッジインデックスをリスト型で作成する関数
