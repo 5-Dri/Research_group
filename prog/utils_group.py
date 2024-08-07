@@ -69,6 +69,18 @@ def filter_adjacent_nodes(single_element_lists, G):
 
     return filtered_lists
 
+def compute_group_features_mean(groups, features):
+    group_means = []
+
+    for group in groups:
+        group_features = torch.stack([features[node] for node in group])
+        group_mean = torch.mean(group_features, dim=0)
+        group_means.append(group_mean)
+
+    return torch.stack(group_means)
+
+
+
 
 # グループごとのエッジインデックスをリスト型で作成する関数
 def create_group_edge_indices_list(G, partition):
