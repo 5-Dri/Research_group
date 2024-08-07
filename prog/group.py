@@ -35,7 +35,7 @@ edge_index2 = torch.Tensor([[0,1,2,2,2,2,3,4,4,5,5,5,6,7,7,8,9,9],
 edge_index3 = torch.Tensor([[0,1,1,1,2,3,3,3,3,4,4,4,5,5,6,7,7,7,7,8,8,8,9,10,10,11,11,11,12,12,12,13,13,14,15,15,16,16,18,19],
                            [1,0,2,3,1,1,4,8,7,3,6,5,4,19,4,3,11,10,12,3,9,10,8,8,7,7,13,14,7,15,16,11,18,11,12,17,12,17,13,5]])
 
-edge_index = edge_index3
+edge_index = edge_index1
 
 data_hoge = torch.Tensor([[0,0,0,0,0],
                           [1,1,1,1,1],
@@ -58,7 +58,7 @@ data_hoge = torch.Tensor([[0,0,0,0,0],
                          [18,18,18,18,18],
                          [19,19,19,19,19]])
 
-feature = data_hoge
+feature = data.x
 
 
 #nxに使える形にedge_indexを変換
@@ -79,22 +79,25 @@ G.add_edges_from(edges)
 
 # グループ分け
 groups, target_node = group_nodes_weighted_by_degree(G)
-#print("groups", groups)
-#print("target_nodes", target_node)
+# print("first_groups", groups)
+print("first group len", len(groups))
+# print("target_nodes", target_node)
+print("first taget len", len(target_node))
 
-result = filter_single_element_lists(groups)
+# result = filter_single_element_lists(groups)
 #print("長さ１のグループ",result)
 
-result2 = filter_adjacent_nodes(groups, G)
+result2, target_node2 = filter_adjacent_nodes(groups, G, target_node)
 #print("最終グループ",result2)
-
+# print("new target_node", target_node2)
+print("new group len", len(result2))
+print("new target len", len(target_node2))
 
 group_feature = compute_group_features_mean(result2, feature)
 
 
 print(group_feature.shape)
-print(len(group_feature[0]))
-#print(group_feature)
+# print(group_feature)
 
 
 
@@ -115,17 +118,17 @@ print(len(group_feature[0]))
 
 
 #グループをノードとする新しいグラフ
-new_G = make_group_graph(G, target_node)
+new_G = make_group_graph(G, target_node2)
 print("new G", new_G)
-#print(new_G.nodes())
+# print(new_G.nodes())
 
 new_edge = new_G.edges()
 #print("new edge", new_edge)
 
 
-pos = nx.spring_layout(new_G, seed=1) #ノードの配置を指定
+# pos = nx.spring_layout(new_G, seed=1) #ノードの配置を指定
 
-# グラフの描画
-plt.figure(figsize=(10,10)) #グラフエリアのサイズ
-nx.draw_networkx(new_G, pos, node_color='#87cefa',node_shape='D', font_size=10) #グラフの描画(おまかせ)
-plt.show() #グラフの描画
+# # グラフの描画
+# plt.figure(figsize=(10,10)) #グラフエリアのサイズ
+# nx.draw_networkx(new_G, pos, node_color='#87cefa',node_shape='D', font_size=10) #グラフの描画(おまかせ)
+# plt.show() #グラフの描画
