@@ -52,14 +52,14 @@ G.add_edges_from(edges)
 # グループ分け
 groups, target_node = group_nodes_weighted_by_degree(G)
 print("groups", groups)
-print("target_nodes", target_node)
+# print("target_nodes", target_node)
 
 result = filter_single_element_lists(groups)
 print("長さ１のグループ",result)
 
-result2, result3 = filter_adjacent_nodes(groups, G)
-print("隣接含むリスト",result2)
-print("合体",result3)
+result2 = filter_adjacent_nodes(groups, G)
+print("最終グループ",result2)
+
 
 
 

@@ -57,9 +57,17 @@ def filter_adjacent_nodes(single_element_lists, G):
                 if len(lst) > 1 and any(neighbor in lst for neighbor in neighbors):
                     adjacent_nodes_lists.append(lst)
                     combined_lists.append([node] + lst)
+
+                    lst.append(node)
+
                     break  # 同じリストを複数回追加しないようにするため
 
-    return adjacent_nodes_lists, combined_lists
+    filtered_lists = [lst for lst in single_element_lists if len(lst) != 1]
+
+    # print("隣接含むリスト",adjacent_nodes_lists)
+    # print("合体",combined_lists)
+
+    return filtered_lists
 
 
 # グループごとのエッジインデックスをリスト型で作成する関数
