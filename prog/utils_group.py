@@ -42,8 +42,11 @@ def group_nodes_weighted_by_degree(G):
 def filter_single_element_lists(list_of_lists):
     return [lst for lst in list_of_lists if len(lst) == 1]
 
-def filter_adjacent_nodes(single_element_lists, G):
+def filter_adjacent_nodes(single_element_lists, G, target_nodes):
     single_nodes = [lst[0] for lst in single_element_lists if len(lst) == 1]
+
+    print("長さ１のグループ",len(single_nodes))
+
     adjacent_nodes_lists = []
     combined_lists = []
 
@@ -51,7 +54,10 @@ def filter_adjacent_nodes(single_element_lists, G):
         # for edge in graph:
         #     print(edge)
             # if node in edge:
-            #     adjacent_nodes_lists.append(edge)
+            #     adjacent_nodes_lists.append(edge)]
+        if node in target_nodes:
+            target_nodes.remove(node)
+
         neighbors = list(G.neighbors(node))
         for lst in single_element_lists:
                 if len(lst) > 1 and any(neighbor in lst for neighbor in neighbors):
@@ -67,7 +73,7 @@ def filter_adjacent_nodes(single_element_lists, G):
     # print("隣接含むリスト",adjacent_nodes_lists)
     # print("合体",combined_lists)
 
-    return filtered_lists
+    return filtered_lists, target_nodes
 
 def compute_group_features_mean(groups, features):
     group_means = []
