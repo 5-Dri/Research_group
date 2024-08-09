@@ -3,6 +3,7 @@ import torch
 import networkx as nx
 from torch_geometric.data import Data
 import numpy as np
+import numpy.linalg as LA
 
 
 
@@ -79,7 +80,7 @@ def compute_group_features_mean(groups, features):
     group_means = []
 
     for group in groups:
-        group_features = torch.stack([features[node] for node in group])
+        group_features = torch.stack([features[int(node)] for node in group])
         group_mean = torch.mean(group_features, dim=0)
         group_means.append(group_mean)
 
@@ -131,3 +132,15 @@ def make_group_graph(G, target_nodes):
                     continue
     
     return subgraph
+
+def get_eigen_zeros(G):
+    c = 0
+    laplacian = nx.laplacian_matrix(G)
+    laplacian = laplacian.toarray()
+    lams, p = LA.eigh(laplacian)
+
+    for lam in lams:
+        if lam < 0.01:
+            c += 1
+
+    return c

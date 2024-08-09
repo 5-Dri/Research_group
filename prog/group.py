@@ -9,7 +9,7 @@ import time
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from utils_group import group_nodes_weighted_by_degree, filter_single_element_lists, filter_adjacent_nodes, compute_group_features_mean, create_group_edge_indices_list,make_group_graph, convert_to_pyg_data
+from utils_group import group_nodes_weighted_by_degree, get_eigen_zeros, filter_single_element_lists, filter_adjacent_nodes, compute_group_features_mean, create_group_edge_indices_list,make_group_graph, convert_to_pyg_data
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='Cora')
@@ -35,7 +35,6 @@ edge_index2 = torch.Tensor([[0,1,2,2,2,2,3,4,4,5,5,5,6,7,7,8,9,9],
 edge_index3 = torch.Tensor([[0,1,1,1,2,3,3,3,3,4,4,4,5,5,6,7,7,7,7,8,8,8,9,10,10,11,11,11,12,12,12,13,13,14,15,15,16,16,18,19],
                            [1,0,2,3,1,1,4,8,7,3,6,5,4,19,4,3,11,10,12,3,9,10,8,8,7,7,13,14,7,15,16,11,18,11,12,17,12,17,13,5]])
 
-edge_index = edge_index1
 
 data_hoge = torch.Tensor([[0,0,0,0,0],
                           [1,1,1,1,1],
@@ -58,7 +57,13 @@ data_hoge = torch.Tensor([[0,0,0,0,0],
                          [18,18,18,18,18],
                          [19,19,19,19,19]])
 
-feature = data.x
+
+
+# edge_index = edge_index1
+# feature = data.x
+
+edge_index = edge_index3
+feature = data_hoge
 
 
 #nxに使える形にedge_indexを変換
@@ -125,6 +130,8 @@ print("new G", new_G)
 new_edge = new_G.edges()
 #print("new edge", new_edge)
 
+lam_zero = get_eigen_zeros(new_G)
+print(lam_zero)
 
 # pos = nx.spring_layout(new_G, seed=1) #ノードの配置を指定
 
