@@ -90,11 +90,12 @@ def compute_group_features_mean(groups, features):
 
 
 # グループごとのエッジインデックスをリスト型で作成する関数
+#この関数は不要なはず。。
 def create_group_edge_indices_list(G, partition):
     group_edges = {}
     for (u, v) in G.edges():
-        group_u = partition[u]
-        group_v = partition[v]
+        group_u = partition[int(u)]
+        group_v = partition[int(v)]
         if group_u == group_v:  # 同じグループのノード間のエッジのみ考慮
             if group_u not in group_edges:
                 group_edges[group_u] = [[], []]  # 辺の始点リストと終点リストを初期化
@@ -120,13 +121,16 @@ def make_group_graph(G, target_nodes):
 
     subgraph = nx.Graph()
     subgraph.add_nodes_from(target_nodes)
+    max_length = 3
 
     for node in target_nodes:
         for target_node in target_nodes:
              if node != target_node:  # 自分自身を除外
                 try:
-                    path_length = nx.shortest_path_length(G, source=node, target=target_node)
-                    if path_length <= 3:
+                    # path_length = nx.shortest_path_length(G, source=node, target=target_node)
+                    all_paths = list(nx.all_simple_paths(G, source=node, target=target_node, cutoff=max_length))
+                    # if path_length <= 3:
+                    if len(all_paths) > 1:
                         subgraph.add_edge(node, target_node)
                 except nx.NetworkXNoPath:
                     continue

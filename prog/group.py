@@ -59,11 +59,11 @@ data_hoge = torch.Tensor([[0,0,0,0,0],
 
 
 
-# edge_index = edge_index1
-# feature = data.x
+edge_index = edge_index1
+feature = data.x
 
-edge_index = edge_index3
-feature = data_hoge
+# edge_index = edge_index3
+# feature = data_hoge
 
 
 #nxに使える形にedge_indexを変換
@@ -73,7 +73,7 @@ edges = edge_index.t().tolist()
 #グラフ作成
 G = nx.Graph()
 G.add_edges_from(edges)
-# print("G", G)
+print("first G", G)
 
 # pos = nx.spring_layout(G, seed=1) #ノードの配置を指定
 
@@ -92,13 +92,13 @@ print("first taget len", len(target_node))
 # result = filter_single_element_lists(groups)
 #print("長さ１のグループ",result)
 
-result2, target_node2 = filter_adjacent_nodes(groups, G, target_node)
+final_groups, target_node2 = filter_adjacent_nodes(groups, G, target_node)
 #print("最終グループ",result2)
 # print("new target_node", target_node2)
-print("new group len", len(result2))
+print("new group len", len(final_groups))
 print("new target len", len(target_node2))
 
-group_feature = compute_group_features_mean(result2, feature)
+group_feature = compute_group_features_mean(final_groups, feature)
 
 
 print(group_feature.shape)
@@ -128,7 +128,10 @@ print("new G", new_G)
 # print(new_G.nodes())
 
 new_edge = new_G.edges()
-#print("new edge", new_edge)
+# print("new edge", new_edge)
+
+# new_edge_list = create_group_edge_indices_list(new_G, final_groups)
+# print(new_edge_list)
 
 lam_zero = get_eigen_zeros(new_G)
 print(lam_zero)
