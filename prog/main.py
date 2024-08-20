@@ -5,6 +5,7 @@ from model import GAT
 import torch_geometric.transforms as T
 from tqdm import tqdm
 from utils import EarlyStopping, set_seed
+# from utils_group import 
 import hydra
 from hydra import utils
 # import mlflow
@@ -127,7 +128,7 @@ def main(cfg):
         model = GAT(cfg).to(device)
 
         optimizer = torch.optim.Adam(params=model.parameters(), lr=cfg["learing_late"],weight_decay=cfg['weight_decay'])
-        #test_acc,epoch,attention,h = run(data,model,optimizer,cfg,spectral_dist)
+        
         test_acc,epoch,attention,h = run(data,model,optimizer,cfg)
         test_accs.append(test_acc)
         epochs.append(epoch)

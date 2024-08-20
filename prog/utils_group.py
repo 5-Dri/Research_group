@@ -40,13 +40,14 @@ def group_nodes_weighted_by_degree(G):
     #return groups, subgraph
     return groups , select_node
 
+# 不要な関数
 def filter_single_element_lists(list_of_lists):
     return [lst for lst in list_of_lists if len(lst) == 1]
 
 def filter_adjacent_nodes(single_element_lists, G, target_nodes):
     single_nodes = [lst[0] for lst in single_element_lists if len(lst) == 1]
 
-    print("長さ１のグループ",len(single_nodes))
+    #print("長さ１のグループ",len(single_nodes))
 
     adjacent_nodes_lists = []
     combined_lists = []
@@ -148,3 +149,15 @@ def get_eigen_zeros(G):
             c += 1
 
     return c
+
+
+def graph_group(G, feature):
+    groups, target_node = group_nodes_weighted_by_degree(G)
+
+    final_groups, final_target_node = filter_adjacent_nodes(groups, G, target_node)
+
+    group_feature = compute_group_features_mean(final_groups, feature)
+
+    new_G = make_group_graph(G, final_target_node)
+
+    return new_G, group_feature, final_target_node
