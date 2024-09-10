@@ -98,6 +98,17 @@ final_groups, target_node2 = filter_adjacent_nodes(groups, G, target_node)
 print("new group len", len(final_groups))
 print("new target len", len(target_node2))
 
+
+# for i in range(11):
+#     print("group_index ??", final_groups[i])
+#     print("group_index ??", target_node2[i])
+
+#     if target_node2[i] in final_groups[i]:
+#         print("配列の中にあります。")
+#     else:
+#         print("配列の中にありません。")
+
+
 group_feature = compute_group_features_mean(final_groups, feature)
 
 
