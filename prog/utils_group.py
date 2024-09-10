@@ -105,15 +105,6 @@ def create_group_edge_indices_list(G, partition):
     return group_edges
 
 
-# PyTorch Geometricのデータ形式に変換する関数
-
-def convert_to_pyg_data(group_edge_indices, data1):
-    pyg_data_list = []
-    for edges in group_edge_indices:
-        edge_index = torch.tensor(edges, dtype=torch.long).to(device='cuda')
-        data = Data(x=data1.x, edge_index=edge_index, y = data1.y, train_mask = data1.train_mask, val_mask = data1.val_mask, test_mask = data1.test_mask)
-        pyg_data_list.append(data)
-    return pyg_data_list
 
 
 #グループをノードとするグラフ作成
@@ -161,3 +152,15 @@ def graph_group(G, feature):
     new_G = make_group_graph(G, final_target_node)
 
     return new_G, group_feature, final_target_node
+
+
+
+# PyTorch Geometricのデータ形式に変換する関数
+
+def convert_to_pyg_data(group_edge_indices, data1):
+    pyg_data_list = []
+    for edges in group_edge_indices:
+        edge_index = torch.tensor(edges, dtype=torch.long).to(device='cuda')
+        data = Data(x=data1.x, edge_index=edge_index, y = data1.y, train_mask = data1.train_mask, val_mask = data1.val_mask, test_mask = data1.test_mask)
+        pyg_data_list.append(data)
+    return pyg_data_list

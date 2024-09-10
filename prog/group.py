@@ -100,13 +100,13 @@ print("new target len", len(target_node2))
 
 
 # for i in range(11):
-#     print("group_index ??", final_groups[i])
+#     # print("group_index ??", final_groups[i])
 #     print("group_index ??", target_node2[i])
 
-#     if target_node2[i] in final_groups[i]:
-#         print("配列の中にあります。")
-#     else:
-#         print("配列の中にありません。")
+#     # if target_node2[i] in final_groups[i]:
+#     #     print("配列の中にあります。")
+#     # else:
+#     #     print("配列の中にありません。")
 
 
 group_feature = compute_group_features_mean(final_groups, feature)
@@ -136,6 +136,7 @@ print(group_feature.shape)
 #グループをノードとする新しいグラフ
 new_G = make_group_graph(G, target_node2)
 print("new G", new_G)
+# print("G node", new_G.nodes())
 # print(new_G.nodes())
 
 new_edge = new_G.edges()
