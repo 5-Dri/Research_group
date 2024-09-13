@@ -9,7 +9,7 @@ import time
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from utils_group import group_nodes_weighted_by_degree, get_eigen_zeros, filter_single_element_lists, filter_adjacent_nodes, compute_group_features_mean, create_group_edge_indices_list,make_group_graph, convert_to_pyg_data
+from utils_group import group_nodes_weighted_by_degree, get_eigen_zeros, filter_single_element_lists, filter_adjacent_nodes, compute_group_features_mean, create_group_edge_indices_list,make_group_graph, convert_pygdata
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='Cora')
@@ -132,10 +132,10 @@ print(group_feature.shape)
 # #グループ内のノードのリスト
 
 
-
 #グループをノードとする新しいグラフ
 new_G = make_group_graph(G, target_node2)
 print("new G", new_G)
+
 # print("G node", new_G.nodes())
 # print(new_G.nodes())
 
@@ -154,3 +154,7 @@ print(lam_zero)
 # plt.figure(figsize=(10,10)) #グラフエリアのサイズ
 # nx.draw_networkx(new_G, pos, node_color='#87cefa',node_shape='D', font_size=10) #グラフの描画(おまかせ)
 # plt.show() #グラフの描画
+
+
+pyg_data = convert_pygdata(group_feature, new_G)
+print(pyg_data)

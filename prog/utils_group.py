@@ -157,10 +157,20 @@ def graph_group(G, feature):
 
 # PyTorch Geometricのデータ形式に変換する関数
 
-def convert_to_pyg_data(group_edge_indices, data1):
-    pyg_data_list = []
-    for edges in group_edge_indices:
-        edge_index = torch.tensor(edges, dtype=torch.long).to(device='cuda')
-        data = Data(x=data1.x, edge_index=edge_index, y = data1.y, train_mask = data1.train_mask, val_mask = data1.val_mask, test_mask = data1.test_mask)
-        pyg_data_list.append(data)
-    return pyg_data_list
+# def convert_to_pyg_data(group_edge_indices, data1):
+#     pyg_data_list = []
+#     for edges in group_edge_indices:
+#         edge_index = torch.tensor(edges, dtype=torch.long).to(device='cuda')
+#         data = Data(x=data1.x, edge_index=edge_index, y = data1.y, train_mask = data1.train_mask, val_mask = data1.val_mask, test_mask = data1.test_mask)
+#         pyg_data_list.append(data)
+#     return pyg_data_list
+
+def convert_pygdata(feature, G):
+
+    edge_list = list(G.edges())
+    edge_index = torch.tensor(list(zip(*edge_list)), dtype=torch.long)
+
+
+    data = Data(x=feature, edge_index=edge_index)
+
+    return data
