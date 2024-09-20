@@ -168,6 +168,8 @@ def graph_group(G, feature):
 def convert_pygdata(feature, G):
 
     edge_list = list(G.edges())
+    edge_list = edge_list + [(v, u) for u, v in edge_list]
+    
     edge_index = torch.tensor(list(zip(*edge_list)), dtype=torch.long)
 
 

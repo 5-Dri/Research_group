@@ -16,6 +16,8 @@ class GAT(nn.Module):
         self.mid_norms = nn.ModuleList()
         self.mid_convs = nn.ModuleList()
         self.mid_lins = nn.ModuleList()
+
+
         if cfg['norm'] == 'LayerNorm':
             self.in_norm = nn.LayerNorm(cfg['n_hid']*cfg['n_head'])
             for _ in range(1,cfg["num_layer"]-1):
@@ -31,6 +33,8 @@ class GAT(nn.Module):
             for _ in range(1,cfg["num_layer"]-1):
                 self.mid_norms.append(nn.Identity())
             self.out_norm = nn.Identity()
+
+
         if cfg["num_layer"] == 1:
             if cfg['task'] == 'Transductive':
                 self.outconv = GATConv(in_channels=cfg['n_feat'], out_channels=cfg['n_class'], heads=cfg['n_head_last'], concat=False,dropout=cfg['n_layer_dropout'],attention_type=cfg["att_type"])
@@ -51,6 +55,7 @@ class GAT(nn.Module):
                     self.mid_lins.append(torch.nn.Linear(cfg['n_head'] * cfg['n_hid'], cfg['n_head'] * cfg['n_hid']))
                 self.outconv = GATConv(cfg['n_head'] * cfg['n_hid'], cfg['n_class'], heads=cfg['n_head_last'],concat=False,attention_type=cfg["att_type"])
                 self.out_lin = torch.nn.Linear(cfg['n_head'] * cfg['n_hid'], cfg['n_class'])
+
 
     def forward(self, x, edge_index):
         if self.cfg['task'] == 'Transductive':
