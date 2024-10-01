@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch_geometric.datasets import Planetoid
-from model import GAT
+from new_model import GAT
 import torch_geometric.transforms as T
 from tqdm import tqdm
 from utils import EarlyStopping, set_seed
@@ -113,7 +113,7 @@ def main(cfg):
     data = dataset[0].to(device)
     print(data)
     
-    data,index = random_splits(data=data,num_classes=cfg["n_class"],lcc_mask=None)
+    data,index = random_splits(data=data, num_classes=cfg["n_class"], lcc_mask=None)
     # check_train_label_per(data)
 
     artifacts,test_accs,epochs,attentions,hs = {},[],[],[],[]

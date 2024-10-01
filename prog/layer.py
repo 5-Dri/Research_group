@@ -49,12 +49,19 @@ class GATConv(MessagePassing):
         x = self.lin(x).view(-1, H, C)
         # propagate_type: (x: Tensor)
         out = self.propagate(edge_index, x=x, size=None)
+        # print("out_shape1", out.shape)
+        # print("out_len", len(out[1]))
+
         if self.concat is True:
             out = out.view(-1, self.heads * self.out_channels)
+            # print("out_shape2", out.shape)
         else:
             out = out.mean(dim=1)
+            # print("out_shape3", out.shape)
         if self.bias is not None:
             out += self.bias
+            # print("out_shape4", out.shape)
+
         return out
     
     def message(self, edge_index_i: Tensor, x_i: Tensor, x_j: Tensor,

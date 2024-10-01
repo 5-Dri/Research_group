@@ -71,7 +71,9 @@ class GAT(nn.Module):
                 x = F.elu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)
             x = self.outconv(x,edge_index)
+            # print("model pre 1", x.shape)
             x = self.out_norm(x)
+            # print("model 1", x.shape)
 
         elif self.cfg['task'] == 'Inductive':
             if self.cfg["num_layer"] !=1:
@@ -84,7 +86,9 @@ class GAT(nn.Module):
                 x = F.elu(x)
             x = self.outconv(x, edge_index) + self.out_lin(x)
             x = self.out_norm(x)
-            
+
+            # print("model 2", x.shape)
+
         return x,[],self.outconv.alpha_
 
     def get_v_attention(self, edge_index,num_nodes,att):

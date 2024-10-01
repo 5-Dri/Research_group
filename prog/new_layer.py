@@ -55,6 +55,11 @@ class GATConv(MessagePassing):
 
         # propagate_type: (x: Tensor)
         out = self.propagate(edge_index, x=x, size=None)
+        out2 = self.propagate(edge_index, gx, size=None)
+
+        #ここで各ノードで特徴量を連結する？
+
+
         if self.concat is True:
             out = out.view(-1, self.heads * self.out_channels)
         else:
@@ -83,3 +88,4 @@ class GATConv(MessagePassing):
         return (f'{self.__class__.__name__}({self.in_channels}, '
                 f'{self.out_channels}, heads={self.heads}, '
                 )
+    
