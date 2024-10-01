@@ -169,10 +169,29 @@ def convert_pygdata(feature, G):
 
     edge_list = list(G.edges())
     edge_list = edge_list + [(v, u) for u, v in edge_list]
-    
+
     edge_index = torch.tensor(list(zip(*edge_list)), dtype=torch.long)
 
 
     data = Data(x=feature, edge_index=edge_index)
 
     return data
+
+
+def new_graph(x, edge_index):
+
+    edges = edge_index.t().tolist()
+
+    G = nx.Graph()
+    G.add_edges_from(edges)
+
+    pre_group_index, pre_target_node = group_nodes_weighted_by_degree(G)
+
+    group_index, target_node = filter_adjacent_nodes(pre_group_index, G, pre_target_node)
+
+    group_feature = compute_group_features_mean(group_index, x)
+
+    new_G = make_group_graph(G, target_node)
+    new_edge = new_G
+
+    return G

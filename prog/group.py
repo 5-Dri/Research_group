@@ -84,7 +84,7 @@ print("first G", G)
 
 # グループ分け
 groups, target_node = group_nodes_weighted_by_degree(G)
-# print("first_groups", groups)
+print("first_groups", groups)
 print("first group len", len(groups))
 # print("target_nodes", target_node)
 print("first taget len", len(target_node))
