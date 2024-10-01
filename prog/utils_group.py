@@ -192,6 +192,8 @@ def new_graph(x, edge_index):
     group_feature = compute_group_features_mean(group_index, x)
 
     new_G = make_group_graph(G, target_node)
-    new_edge = new_G
+    # new_edge = new_G.edges()
 
-    return G
+    pyg_data = convert_pygdata(group_feature, new_G)
+
+    return pyg_data, group_index
