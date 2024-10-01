@@ -5,6 +5,7 @@ from new_model import GAT
 import torch_geometric.transforms as T
 from tqdm import tqdm
 from utils import EarlyStopping, set_seed
+from utils_group import new_graph
 import hydra
 from hydra import utils
 # import mlflow
@@ -44,10 +45,10 @@ def random_splits(data, num_classes, lcc_mask):
 
     return data, torch.cat((train_index, val_index), dim=0)
 
-def train(data, model, optimizer):
+def train(data, data_group, group_index, model, optimizer):
     model.train()
     optimizer.zero_grad()
-    out_train, hs, _ = model(data.x, data.edge_index)
+    out_train, hs, _ = model(data.x, data.edge_index, data_group.x, data_group.data_index)
 
     out_train_softmax =  F.log_softmax(out_train, dim=-1)
     loss_train  = F.nll_loss(out_train_softmax[data.train_mask], data.y[data.train_mask])
@@ -82,7 +83,10 @@ def accuracy(out,data,mask):
 def run(data,model,optimizer,cfg):
     early_stopping = EarlyStopping(cfg['patience'],path=cfg['path'])
     for epoch in range(cfg['epochs']):
-        loss_val = train(data,model,optimizer)
+        if epoch % 10 == 1:
+            data_group, group_index = new_graph(data.x, data.edge_index)
+
+        loss_val = train(data, data_group ,group_index, model, optimizer)
         if early_stopping(loss_val,model,epoch) is True:
             break
     model.load_state_dict(torch.load(cfg['path']))
