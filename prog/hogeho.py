@@ -26,6 +26,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 edge_index1 = data.edge_index
 print(data.edge_index.shape)
 print(data.x.shape)
+print(data.x.dtype)
+print(data.edge_index.dtype)
 
 #print(len(data.x[0]))
 
@@ -65,3 +67,33 @@ feature = data.x
 data, group_index = new_graph(feature, edge_index)
 
 print(data)
+print(data.x.dtype)
+print(data.edge_index.dtype)
+# print(len(group_index))
+# print(group_index[0].dtype)
+
+print(type(group_index))
+print(type(group_index[0]))
+
+# def get_group_features(x2_out, group_assignment, node_indices):
+#     """
+#     各ノードに対応するグループの特徴量を取得する
+#     :param x2_out: グループノードの特徴量テンソル
+#     :param group_assignment: 各グループに属するノードのリスト
+#     :param node_indices: グラフ1のノードのインデックス
+#     :return: 各ノードに対応するグループの特徴量テンソル
+#     """
+#     node_to_group_features = []
+
+#     # ノードごとに、その属するグループの特徴量を取得
+#     for node_idx in node_indices:
+#         # group_assignmentを検索してノードaが属するグループを見つける
+#         for group_idx, group in enumerate(group_assignment):
+#             if node_idx in group:
+#                 # グループAの特徴量を取得
+#                 group_features = x2_out[group_idx]
+#                 node_to_group_features.append(group_features)
+#                 break
+
+#     # テンソルに変換して返す
+#     return torch.stack(node_to_group_features, dim=0)

@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from utils_group import group_nodes_weighted_by_degree, get_eigen_zeros, filter_single_element_lists, filter_adjacent_nodes, compute_group_features_mean, create_group_edge_indices_list,make_group_graph, convert_pygdata
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='Cora')
+parser.add_argument('--dataset', type=str, default='CiteSeer')
 args = parser.parse_args()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -21,6 +21,8 @@ path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'Planetoid')
 dataset = Planetoid(path, args.dataset, transform=T.NormalizeFeatures())
 data = dataset[0].to(device)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+print(args.dataset)
 
 
 edge_index1 = data.edge_index
@@ -84,7 +86,7 @@ print("first G", G)
 
 # グループ分け
 groups, target_node = group_nodes_weighted_by_degree(G)
-print("first_groups", groups)
+# print("first_groups", groups)
 print("first group len", len(groups))
 # print("target_nodes", target_node)
 print("first taget len", len(target_node))

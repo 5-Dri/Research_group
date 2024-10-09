@@ -6,7 +6,7 @@ import numpy as np
 import numpy.linalg as LA
 
 
-
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # すべてのノードが属するようにグループ分けを行う関数
 def group_nodes_weighted_by_degree(G):
@@ -194,6 +194,10 @@ def new_graph(x, edge_index):
     new_G = make_group_graph(G, target_node)
     # new_edge = new_G.edges()
 
-    pyg_data = convert_pygdata(group_feature, new_G)
+    pyg_data = convert_pygdata(group_feature, new_G).to(device)
+
+    # tensor_index = [torch.tensor(sublist, dtype=torch.long).to(device) for sublist in group_index]
 
     return pyg_data, group_index
+
+    # return pyg_data, tensor_index

@@ -48,7 +48,38 @@ def random_splits(data, num_classes, lcc_mask):
 def train(data, data_group, group_index, model, optimizer):
     model.train()
     optimizer.zero_grad()
-    out_train, hs, _ = model(data.x, data.edge_index, data_group.x, data_group.data_index)
+    print("2", type(group_index))
+
+
+    if data_group.edge_index.numel() > 0 and data_group.edge_index.min() < 0:
+        print(True)
+    else:
+        print(False)
+    if data_group.edge_index.max() >= data.x.size(0):
+        print(True)
+    else:
+        print(False)
+    if data_group.edge_index.numel() == 0:
+        print("index is empty!")
+
+    print("x")
+    print(data.x.device)
+    print(type(data.x))
+    print(data.x.shape)
+    print("edge_index")
+    print(data.edge_index.device)
+    print(type(data.edge_index))
+    print(data.edge_index.shape)
+    print("g_x")
+    print(data_group.x.device)
+    print(type(data_group.x))
+    print(data_group.x.shape)
+    print("g_edge_index")
+    print(data_group.edge_index.device)
+    print(type(data_group.edge_index))
+    print(data_group.edge_index.shape)
+
+    out_train, hs, _ = model(data.x, data.edge_index, data_group.x, data_group.edge_index, group_index)
 
     out_train_softmax =  F.log_softmax(out_train, dim=-1)
     loss_train  = F.nll_loss(out_train_softmax[data.train_mask], data.y[data.train_mask])
@@ -82,9 +113,11 @@ def accuracy(out,data,mask):
 
 def run(data,model,optimizer,cfg):
     early_stopping = EarlyStopping(cfg['patience'],path=cfg['path'])
+    data_group, group_index = new_graph(data.x, data.edge_index)
     for epoch in range(cfg['epochs']):
-        if epoch % 10 == 1:
+        if epoch % 10 == 0:
             data_group, group_index = new_graph(data.x, data.edge_index)
+            print("1", type(group_index))
 
         loss_val = train(data, data_group ,group_index, model, optimizer)
         if early_stopping(loss_val,model,epoch) is True:

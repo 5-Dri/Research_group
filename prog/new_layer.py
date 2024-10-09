@@ -17,7 +17,7 @@ class GATConv(MessagePassing):
     def __init__(self, in_channels: int, out_channels: int, heads: int = 1,
                  concat: bool = True,dropout: float = 0.0,
                  add_self_loops: bool = True,
-                 bias: bool = True,attention_type: str = 'SD',**kwargs):
+                 bias: bool = True,attention_type: str = 'SD',graph_type: str='origin', **kwargs):
         kwargs.setdefault('aggr', 'add')
         super().__init__(node_dim=0, **kwargs)
         self.in_channels = in_channels
@@ -28,6 +28,7 @@ class GATConv(MessagePassing):
         self.add_self_loops = add_self_loops
         self.alpha_ = None
         self.attention_type=attention_type
+        self.graph_type = graph_type
         self.lin = Linear(in_channels, heads * out_channels, bias=False, weight_initializer='glorot')
         if bias and concat:
             self.bias = Parameter(torch.Tensor(heads * out_channels))
@@ -53,9 +54,12 @@ class GATConv(MessagePassing):
         x = self.lin(x).view(-1, H, C)
         gx = self.lin(gx).view(-1, GH, GC)
 
+        
         # propagate_type: (x: Tensor)
-        out = self.propagate(edge_index, x=x, size=None)
-        out2 = self.propagate(edge_index, gx, size=None)
+        if self.graph_type == 'origin':
+            out = self.propagate(edge_index, x=x, size=None)
+        elif self.graph_type =='group':
+            out = self.propagate(edge_index, x=gx, size=None)
 
         #ここで各ノードで特徴量を連結する？
 

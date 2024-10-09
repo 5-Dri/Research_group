@@ -7,57 +7,90 @@ from torch_geometric.utils import (
 )
 from layer import GATConv
 
+def get_group_features(x2_out, group_assignment, node_indices):
+    """
+    各ノードに対応するグループの特徴量を取得する
+    :param x2_out: グループノードの特徴量テンソル
+    :param group_assignment: 各グループに属するノードのリスト
+    :param node_indices: グラフ1のノードのインデックス
+    :return: 各ノードに対応するグループの特徴量テンソル
+    """
+    node_to_group_features = []
+
+    # ノードごとに、その属するグループの特徴量を取得
+    print(type(node_indices))
+    for node_idx in node_indices:
+        # group_assignmentを検索してノードaが属するグループを見つける
+        for group_idx, group in enumerate(group_assignment):
+            if node_idx in group:
+                # グループAの特徴量を取得
+                group_features = x2_out[group_idx]
+                node_to_group_features.append(group_features)
+                break
+
+    # テンソルに変換して返す
+    return torch.stack(node_to_group_features, dim=0)
+
 # カスタムGAT層：グラフ1とグラフ2を同時に処理
 class DualGATConv(nn.Module):
-    def __init__(self, in_channels, out_channels, heads, dropout, att_type):
+    def __init__(self, in_channels, out_channels, heads, dropout, attention_type):
         super(DualGATConv, self).__init__()
         # グラフ1とグラフ2の特徴量を処理するGAT層
-        self.gat1 = GATConv(in_channels, out_channels, heads=heads, dropout=dropout, attention_type=att_type)
-        self.gat2 = GATConv(in_channels, out_channels, heads=heads, dropout=dropout, attention_type=att_type)
+        # self.gat1 = GATConv(in_channels, out_channels, heads=heads, dropout=dropout, attention_type=attention_type, graph_type='origin')
+        # self.gat2 = GATConv(in_channels, out_channels, heads=heads, dropout=dropout, attention_type=attention_type, graph_type='group')
+        self.gat1 = GATConv(in_channels, out_channels, heads=heads, dropout=dropout, attention_type=attention_type)
+        self.gat2 = GATConv(in_channels, out_channels, heads=heads, dropout=dropout, attention_type=attention_type)
 
     def forward(self, x, edge_index, x_g, edge_index_g, group_index):
         # グラフ1の特徴量にGATを適用
+        print("4", type(group_index))
+
         x_out = self.gat1(x, edge_index)
 
         # グラフ2の特徴量にGATを適用
         x_g_out = self.gat2(x_g, edge_index_g)
 
         # # グラフ1のノードが属するグループの特徴量を取得して統合
-        # x2_group = x2_out[group_index]  # グラフ1のノードに対応するグラフ2の特徴量
+        # x_group = x_g_out[group_index]  # グラフ1のノードに対応するグラフ2の特徴量
 
-        # # グラフ1とグラフ2の特徴量を統合
-        # x1_combined = x1_out + x2_group
 
-                # ノードごとの重要度計算を高速化
-        updated_node_features = torch.zeros_like(x_out)
+        # グループの特徴量と隣接グループの特徴量を集約
+        x_group = get_group_features(x_g_out, group_index, torch.arange(x.size(0)).tolist())
 
-        # グループノードとその隣接ノードに基づいて特徴量を更新する処理をベクトル演算に変換
-        for group_idx, group in enumerate(group_index):
-            group_feature = x_g_out[group_idx]  # グループノードの特徴量
+        # グラフ1とグラフ2の特徴量を統合
+        out = x_out + x_group
 
-            # 隣接グループノードの特徴を一度に取得
-            adjacent_group_indices = edge_index_g[1][edge_index_g[0] == group_idx]
-            adjacent_group_features = x_g_out[adjacent_group_indices].mean(dim=0)
+        # # ノードごとの重要度計算を高速化
+        # updated_node_features = torch.zeros_like(x_out)
 
-            # グループ内の全ノードに対して一括処理
-            node_features = x_out[group]  # グループ内のノード特徴量を取得
+        # # グループノードとその隣接ノードに基づいて特徴量を更新する処理をベクトル演算に変換
+        # for group_idx, group in enumerate(group_index):
+        #     group_feature = x_g_out[group_idx]  # グループノードの特徴量
 
-            # 内積計算をベクトル演算に変換
-            importance_with_group = torch.einsum('nc,c->n', node_features, group_feature)  # (ノード数, 次元)と(次元)の内積
-            importance_with_adjacent = torch.einsum('nc,c->n', node_features, adjacent_group_features)  # 同様に隣接グループとの内積
+        #     # 隣接グループノードの特徴を一度に取得
+        #     adjacent_group_indices = edge_index_g[1][edge_index_g[0] == group_idx]
+        #     adjacent_group_features = x_g_out[adjacent_group_indices].mean(dim=0)
 
-            # ノード特徴量の更新：重要度に基づく加算処理
-            weighted_group_features = importance_with_group.unsqueeze(-1) * group_feature
-            weighted_adjacent_features = importance_with_adjacent.unsqueeze(-1) * adjacent_group_features
+        #     # グループ内の全ノードに対して一括処理
+        #     node_features = x_out[group]  # グループ内のノード特徴量を取得
 
-            # 結果をノードの特徴量に追加
-            updated_node_features[group] = node_features + weighted_group_features + weighted_adjacent_features
+        #     # 内積計算をベクトル演算に変換
+        #     importance_with_group = torch.einsum('nc,c->n', node_features, group_feature)  # (ノード数, 次元)と(次元)の内積
+        #     importance_with_adjacent = torch.einsum('nc,c->n', node_features, adjacent_group_features)  # 同様に隣接グループとの内積
 
-        # 更新された特徴量でクラス予測
-        out = self.fc(updated_node_features)
+        #     # ノード特徴量の更新：重要度に基づく加算処理
+        #     weighted_group_features = importance_with_group.unsqueeze(-1) * group_feature
+        #     weighted_adjacent_features = importance_with_adjacent.unsqueeze(-1) * adjacent_group_features
+
+        #     # 結果をノードの特徴量に追加
+        #     updated_node_features[group] = node_features + weighted_group_features + weighted_adjacent_features
+
+        # # 更新された特徴量でクラス予測
+        # out = self.fc(updated_node_features)
 
         return out, x_g_out
-
+    
+    
 
 # GATモデルにDualGATConvを適用
 class GAT(nn.Module):
@@ -67,6 +100,7 @@ class GAT(nn.Module):
         self.cfg = cfg
         self.mid_norms = nn.ModuleList()
         self.mid_convs = nn.ModuleList()
+        self.data_index = None
 
         # Normalization layerの設定
         if cfg['norm'] == 'LayerNorm':
@@ -98,7 +132,11 @@ class GAT(nn.Module):
         if self.cfg["num_layer"] != 1:
             # 初期層（グラフ1とグラフ2を処理）
             x1 = F.dropout(x1, p=self.dropout, training=self.training)
+            print("3", type(group_index))
+
             x1, x2 = self.inconv(x1, edge_index1, x2, edge_index2, group_index)
+            print(type(x1))
+            print(x1.shape)
             x1 = self.in_norm(x1)
             x1 = F.elu(x1)
 
