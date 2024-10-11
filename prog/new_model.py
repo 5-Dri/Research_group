@@ -43,7 +43,27 @@ class DualGATConv(nn.Module):
 
     def forward(self, x, edge_index, x_g, edge_index_g, group_index):
         # グラフ1の特徴量にGATを適用
-        print("4", type(group_index))
+        # print("4", type(group_index))
+        # print("x")
+        # print(x.device)
+        # print(type(x))
+        # print(x.shape)
+        # print("edge_index")
+        # print(edge_index.device)
+        # print(type(edge_index))
+        # print(edge_index.shape)
+        # print("g_x")
+        # print(x_g.device)
+        # print(type(x_g))
+        # print(x_g.shape)
+        # print("g_edge_index")
+        # print(edge_index_g.device)
+        # print(type(edge_index_g))
+        # print(edge_index_g.shape)
+
+        # assert edge_index.min() >= 0 and edge_index.max() < x.size(0), f"edge_index1 out of range: {edge_index.max()} >= {x.size(0)}"
+        # assert edge_index_g.min() >= 0 and edge_index_g.max() < x_g.size(0), f"edge_index2 out of range: {edge_index_g.max()} >= {x_g.size(0)}"
+        # assert group_index.min() >= 0, f"group_index contains negative values: {group_index.min()}"
 
         x_out = self.gat1(x, edge_index)
 
@@ -54,11 +74,11 @@ class DualGATConv(nn.Module):
         # x_group = x_g_out[group_index]  # グラフ1のノードに対応するグラフ2の特徴量
 
 
-        # グループの特徴量と隣接グループの特徴量を集約
-        x_group = get_group_features(x_g_out, group_index, torch.arange(x.size(0)).tolist())
+        # # グループの特徴量と隣接グループの特徴量を集約
+        # x_group = get_group_features(x_g_out, group_index, torch.arange(x.size(0)).tolist())
 
-        # グラフ1とグラフ2の特徴量を統合
-        out = x_out + x_group
+        # # グラフ1とグラフ2の特徴量を統合
+        # out = x_out + x_group
 
         # # ノードごとの重要度計算を高速化
         # updated_node_features = torch.zeros_like(x_out)
@@ -88,7 +108,7 @@ class DualGATConv(nn.Module):
         # # 更新された特徴量でクラス予測
         # out = self.fc(updated_node_features)
 
-        return out, x_g_out
+        return x_out, x_g_out
     
     
 
@@ -137,6 +157,17 @@ class GAT(nn.Module):
             x1, x2 = self.inconv(x1, edge_index1, x2, edge_index2, group_index)
             print(type(x1))
             print(x1.shape)
+
+            print(f"x1 shape: {x1.shape}")
+            print(f"LayerNorm normalized_shape: {self.in_norm.normalized_shape}")
+            print(f"x1 device: {x1.device}, LayerNorm device: {next(self.in_norm.parameters()).device}")
+
+            print(f"x1 device: {x1.device}, LayerNorm device: {next(self.in_norm.parameters()).device}")
+            print(f"x1 dtype: {x1.dtype}")
+            # print(f"edge_index1 min: {edge_index1.min()}, max: {edge_index1.max()}, size: {x1.size(0)}")
+            # print(f"edge_index2 min: {edge_index2.min()}, max: {edge_index2.max()}, size: {x2.size(0)}")
+            # print(f"group_index min: {group_index.min()}, max: {group_index.max()}")
+
             x1 = self.in_norm(x1)
             x1 = F.elu(x1)
 
