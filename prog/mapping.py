@@ -4,7 +4,7 @@ def convert_edge_index(group_nodes, edge_index):
     # 1. グループ番号へのマッピングを作成
     node_to_group = {}
     group_assignment = {}
-    for group_idx, nodes in enumerate(group_nodes, start=1):  # グループ番号は1から始める
+    for group_idx, nodes in enumerate(group_nodes, start=0):  # グループ番号は1から始める
         group_assignment[group_idx] = nodes
         for node in nodes:
             node_to_group[node] = group_idx
