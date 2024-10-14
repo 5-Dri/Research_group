@@ -107,8 +107,10 @@ class DualGATConv(nn.Module):
 
         # # 更新された特徴量でクラス予測
         # out = self.fc(updated_node_features)
+        alpha1 = self.gat1.alpha_
+        alpha2 = self.gat2.alpha_
 
-        return x_out, x_g_out
+        return x_out, x_g_out, alpha1, alpha2
     
     
 
@@ -152,18 +154,18 @@ class GAT(nn.Module):
         if self.cfg["num_layer"] != 1:
             # 初期層（グラフ1とグラフ2を処理）
             x1 = F.dropout(x1, p=self.dropout, training=self.training)
-            print("3", type(group_index))
+            # print("3", type(group_index))
 
-            x1, x2 = self.inconv(x1, edge_index1, x2, edge_index2, group_index)
-            print(type(x1))
-            print(x1.shape)
+            x1, x2, alpha1, aplha2 = self.inconv(x1, edge_index1, x2, edge_index2, group_index)
+            # print(type(x1))
+            # print(x1.shape)
 
-            print(f"x1 shape: {x1.shape}")
-            print(f"LayerNorm normalized_shape: {self.in_norm.normalized_shape}")
-            print(f"x1 device: {x1.device}, LayerNorm device: {next(self.in_norm.parameters()).device}")
+            # print(f"x1 shape: {x1.shape}")
+            # print(f"LayerNorm normalized_shape: {self.in_norm.normalized_shape}")
+            # print(f"x1 device: {x1.device}, LayerNorm device: {next(self.in_norm.parameters()).device}")
 
-            print(f"x1 device: {x1.device}, LayerNorm device: {next(self.in_norm.parameters()).device}")
-            print(f"x1 dtype: {x1.dtype}")
+            # print(f"x1 device: {x1.device}, LayerNorm device: {next(self.in_norm.parameters()).device}")
+            # print(f"x1 dtype: {x1.dtype}")
             # print(f"edge_index1 min: {edge_index1.min()}, max: {edge_index1.max()}, size: {x1.size(0)}")
             # print(f"edge_index2 min: {edge_index2.min()}, max: {edge_index2.max()}, size: {x2.size(0)}")
             # print(f"group_index min: {group_index.min()}, max: {group_index.max()}")
@@ -174,16 +176,17 @@ class GAT(nn.Module):
             # 中間層
         for mid_conv, mid_norm in zip(self.mid_convs, self.mid_norms):
             x1 = F.dropout(x1, p=self.dropout, training=self.training)
-            x1, x2 = mid_conv(x1, edge_index1, x2, edge_index2, group_index)
+            x1, x2, alpha1, aplha2  = mid_conv(x1, edge_index1, x2, edge_index2, group_index)
             x1 = mid_norm(x1)
             x1 = F.elu(x1)
 
         # 出力層
         x1 = F.dropout(x1, p=self.dropout, training=self.training)
-        x1, x2 = self.outconv(x1, edge_index1, x2, edge_index2, group_index)
+        x1, x2, alpha1, aplha2  = self.outconv(x1, edge_index1, x2, edge_index2, group_index)
         x1 = self.out_norm(x1)
 
-        return x1, x2
+        return x1, [], alpha1
+
 
     def get_v_attention(self, edge_index,num_nodes,att):
         edge_index, _ = remove_self_loops(edge_index)

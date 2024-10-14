@@ -48,19 +48,19 @@ def random_splits(data, num_classes, lcc_mask):
 def train(data, data_group, group_index, model, optimizer):
     model.train()
     optimizer.zero_grad()
-    print("2", type(group_index))
+    # print("2", type(group_index))
 
 
-    if data_group.edge_index.numel() > 0 and data_group.edge_index.min() < 0:
-        print(True)
-    else:
-        print(False)
-    if data_group.edge_index.max() >= data.x.size(0):
-        print(True)
-    else:
-        print(False)
-    if data_group.edge_index.numel() == 0:
-        print("index is empty!")
+    # if data_group.edge_index.numel() > 0 and data_group.edge_index.min() < 0:
+    #     print(True)
+    # else:
+    #     print(False)
+    # if data_group.edge_index.max() >= data.x.size(0):
+    #     print(True)
+    # else:
+    #     print(False)
+    # if data_group.edge_index.numel() == 0:
+    #     print("index is empty!")
 
     # print("x")
     # print(data.x.device)
@@ -79,7 +79,7 @@ def train(data, data_group, group_index, model, optimizer):
     # print(type(data_group.edge_index))
     # print(data_group.edge_index.shape)
 
-    out_train, hs, *_ = model(data.x, data.edge_index, data_group.x, data_group.edge_index, group_index)
+    out_train, hs, _ = model(data.x, data.edge_index, data_group.x, data_group.edge_index, group_index)
 
     out_train_softmax =  F.log_softmax(out_train, dim=-1)
     loss_train  = F.nll_loss(out_train_softmax[data.train_mask], data.y[data.train_mask])
@@ -89,7 +89,7 @@ def train(data, data_group, group_index, model, optimizer):
 
     #validation
     model.eval()
-    out_val, _, _ = model(data.x, data.edge_index)
+    out_val, _, _ = model(data.x, data.edge_index, data_group.x, data_group.edge_index, group_index)
 
 
     out_val_softmax = F.log_softmax(out_val, dim=-1)
@@ -98,9 +98,9 @@ def train(data, data_group, group_index, model, optimizer):
     return loss_val.item()
 
 @torch.no_grad()
-def test(data,model):
+def test(data, data_group, group_index, model):
     model.eval()
-    out,_,attention = model(data.x, data.edge_index)
+    out,_,attention = model(data.x, data.edge_index, data_group.x, data_group.edge_index, group_index)
     out_softmax = F.log_softmax(out, dim=1)
     acc = accuracy(out_softmax,data,'test_mask')
     attention = model.get_v_attention(data.edge_index,data.x.size(0),attention)
@@ -115,15 +115,17 @@ def run(data,model,optimizer,cfg):
     early_stopping = EarlyStopping(cfg['patience'],path=cfg['path'])
     data_group, group_index = new_graph(data.x, data.edge_index)
     for epoch in range(cfg['epochs']):
-        if epoch % 10 == 0:
+        if epoch % 50 == 0:
+            print("start make new graph")
             data_group, group_index = new_graph(data.x, data.edge_index)
-            print("1", type(group_index))
+            # print("1", type(group_index))
+            print("finish")
 
         loss_val = train(data, data_group ,group_index, model, optimizer)
         if early_stopping(loss_val,model,epoch) is True:
             break
     model.load_state_dict(torch.load(cfg['path']))
-    test_acc,attention,h = test(data,model)
+    test_acc,attention,h = test(data, data_group ,group_index,model)
     return test_acc,early_stopping.epoch,attention,h
 
 
@@ -147,6 +149,7 @@ def main(cfg):
                         pre_transform = eval(cfg['pre_transform']))
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('cpu')
     data = dataset[0].to(device)
     print(data)
     

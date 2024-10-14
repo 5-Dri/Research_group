@@ -7,6 +7,7 @@ import numpy.linalg as LA
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cpu')
 
 # すべてのノードが属するようにグループ分けを行う関数
 def group_nodes_weighted_by_degree(G):
@@ -185,7 +186,7 @@ def convert_edge_index(edge_index, group_nodes):
     # 1. グループ番号へのマッピングを作成
     node_to_group = {}
     group_assignment = {}
-    for group_idx, nodes in enumerate(group_nodes, start=1):  # グループ番号は1から始める
+    for group_idx, nodes in enumerate(group_nodes, start=0):  # グループ番号は1から始める
         group_assignment[group_idx] = nodes
         for node in nodes:
             node_to_group[node] = group_idx

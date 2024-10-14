@@ -421,7 +421,7 @@ debug:
   <<: *GAT_cora_tuned_DP
   oracle_attention: False
   num_layer: 2
-  run: 1
+  run: 2
   
 defaults:
   - override hydra/sweeper: optuna # [basic, optuna]
