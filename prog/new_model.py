@@ -7,29 +7,99 @@ from torch_geometric.utils import (
 )
 from layer import GATConv
 
-def get_group_features(x2_out, group_assignment, node_indices):
-    """
-    各ノードに対応するグループの特徴量を取得する
-    :param x2_out: グループノードの特徴量テンソル
-    :param group_assignment: 各グループに属するノードのリスト
-    :param node_indices: グラフ1のノードのインデックス
-    :return: 各ノードに対応するグループの特徴量テンソル
-    """
-    node_to_group_features = []
+# def get_group_features(x2_out, group_assignment, node_indices):
+#     """
+#     各ノードに対応するグループの特徴量を取得する
+#     :param x2_out: グループノードの特徴量テンソル
+#     :param group_assignment: 各グループに属するノードのリスト
+#     :param node_indices: グラフ1のノードのインデックス
+#     :return: 各ノードに対応するグループの特徴量テンソル
+#     """
+#     node_to_group_features = []
 
-    # ノードごとに、その属するグループの特徴量を取得
-    print(type(node_indices))
-    for node_idx in node_indices:
-        # group_assignmentを検索してノードaが属するグループを見つける
-        for group_idx, group in enumerate(group_assignment):
-            if node_idx in group:
-                # グループAの特徴量を取得
-                group_features = x2_out[group_idx]
-                node_to_group_features.append(group_features)
-                break
+#     # ノードごとに、その属するグループの特徴量を取得
+#     print(type(node_indices))
+#     for node_idx in node_indices:
+#         # group_assignmentを検索してノードaが属するグループを見つける
+#         for group_idx, group in enumerate(group_assignment):
+#             if node_idx in group:
+#                 # グループAの特徴量を取得
+#                 group_features = x2_out[group_idx]
+#                 node_to_group_features.append(group_features)
+#                 break
 
-    # テンソルに変換して返す
-    return torch.stack(node_to_group_features, dim=0)
+#     # テンソルに変換して返す
+#     return torch.stack(node_to_group_features, dim=0)
+
+
+
+def aggregate_all_features_with_attention(node_to_group, X, X2, E2):
+    """
+    全てのノードに対してアテンションを適用し、ノードの最終的な特徴ベクトルを計算する関数。
+    
+    :param node_to_group: ノードが属するグループの辞書
+    :param X: Gのノードの特徴ベクトル (形状: [ノード数, 特徴次元数])
+    :param X2: G2のグループノードの特徴ベクトル (形状: [グループ数, 特徴次元数])
+    :param E2: G2のグループノード間のエッジインデックス (形状: [2, エッジ数])
+    
+    :return: final_feats (形状: [ノード数, 特徴次元数]), attention_weights_per_node (各ノードのアテンション重みリスト)
+    """
+    num_nodes = X.size(0)  # Gのノード数
+    feature_dim = X.size(1)  # 特徴ベクトルの次元数
+    
+    # 最終的な特徴ベクトルを格納するテンソル
+    final_feats = torch.zeros((num_nodes, feature_dim))
+    
+    # 各ノードごとのアテンション重みを格納するリスト
+    attention_weights_per_node = []
+
+    for node_idx in range(num_nodes):
+        group_idx = node_to_group[node_idx + 1]  # ノードインデックスが1ベースのため+1
+        group_feat = X2[group_idx]  # グループの特徴ベクトルを取得
+
+        # 隣接グループの特徴ベクトルと類似度をリストに集める
+        adjacent_group_feats = []
+        similarities_with_adjacent_groups = []
+
+        for edge in E2.t():  # エッジは [2, エッジ数] の形状なので転置してループ
+            if edge[0] == group_idx:
+                adj_group_feat = X2[edge[1]]
+                adjacent_group_feats.append(adj_group_feat)
+                similarities_with_adjacent_groups.append(torch.dot(X[node_idx], adj_group_feat))
+            elif edge[1] == group_idx:
+                adj_group_feat = X2[edge[0]]
+                adjacent_group_feats.append(adj_group_feat)
+                similarities_with_adjacent_groups.append(torch.dot(X[node_idx], adj_group_feat))
+
+        # ノードviの特徴ベクトルと自身のグループの特徴ベクトルを内積で類似度を計算
+        node_feat = X[node_idx]  # ノードの特徴ベクトル
+        similarity_with_group = torch.dot(node_feat, group_feat)  # 自グループとの内積
+
+        # 全ての類似度をリストにまとめる (自身のグループ + 隣接グループ)
+        all_similarities = [similarity_with_group] + similarities_with_adjacent_groups
+
+        # 類似度をソフトマックスでアテンション重みに変換
+        attention_weights = F.softmax(torch.tensor(all_similarities), dim=0)
+
+        # それぞれの特徴ベクトルに確率（アテンション重み）をかける
+        weighted_group_feat = attention_weights[0] * group_feat  # 自グループの特徴ベクトルにアテンション重みを適用
+        weighted_adj_feats = [
+            attention_weights[i + 1] * adjacent_group_feats[i] for i in range(len(adjacent_group_feats))
+        ]
+
+        # 最終的な特徴ベクトルの加重和
+        final_feat = weighted_group_feat + sum(weighted_adj_feats)
+
+        # ノードごとの最終特徴ベクトルを格納
+        final_feats[node_idx] = final_feat
+        
+        # アテンション重みをリストに格納
+        attention_weights_per_node.append(attention_weights)
+
+    return final_feats, attention_weights_per_node
+
+
+
 
 # カスタムGAT層：グラフ1とグラフ2を同時に処理
 class DualGATConv(nn.Module):
@@ -69,6 +139,11 @@ class DualGATConv(nn.Module):
 
         # グラフ2の特徴量にGATを適用
         x_g_out = self.gat2(x_g, edge_index_g)
+
+
+        group_out, _ = aggregate_all_features_with_attention(group_index, x_out, x_g_out, edge_index_g)
+
+        x_out = x_out*0.5 + group_out*0.5
 
         # # グラフ1のノードが属するグループの特徴量を取得して統合
         # x_group = x_g_out[group_index]  # グラフ1のノードに対応するグラフ2の特徴量

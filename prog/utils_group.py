@@ -173,20 +173,20 @@ def convert_pygdata(feature, G, group_index):
 
     edge_index = torch.tensor(list(zip(*edge_list)), dtype=torch.long)
 
-    edge_index, group_assignment = convert_edge_index(edge_index, group_index)
+    edge_index, group_index = convert_edge_index(edge_index, group_index)
 
 
     data = Data(x=feature, edge_index=edge_index)
 
-    return data
+    return data, group_index
 
 
 
-def convert_edge_index(edge_index, group_nodes):
+def convert_edge_index(edge_index, group_index):
     # 1. グループ番号へのマッピングを作成
     node_to_group = {}
     group_assignment = {}
-    for group_idx, nodes in enumerate(group_nodes, start=0):  # グループ番号は1から始める
+    for group_idx, nodes in enumerate(group_index, start=0):  # グループ番号は1から始める
         group_assignment[group_idx] = nodes
         for node in nodes:
             node_to_group[node] = group_idx
@@ -201,8 +201,16 @@ def convert_edge_index(edge_index, group_nodes):
     
     # edge_index_mappedをテンソルに変換
     edge_index_mapped = torch.tensor(edge_index_mapped, dtype=torch.long).t()
+
+
+    # ノードviが属するグループgiを取得
+    node_to_group = {}
+    for group, nodes in group_assignment.items():
+        for node in nodes:
+            node_to_group[node] = group  # ノードインデックスそのまま使用
+
     
-    return edge_index_mapped, group_assignment
+    return edge_index_mapped, node_to_group
 
 
 def new_graph(x, edge_index):
@@ -221,7 +229,7 @@ def new_graph(x, edge_index):
     new_G = make_group_graph(G, target_node)
     # new_edge = new_G.edges()
 
-    pyg_data = convert_pygdata(group_feature, new_G, group_index).to(device)
+    pyg_data, group_index = convert_pygdata(group_feature, new_G, group_index).to(device)
 
     # tensor_index = [torch.tensor(sublist, dtype=torch.long).to(device) for sublist in group_index]
 
